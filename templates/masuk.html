@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+<h4 class="mb-3">Barang Masuk</h4>
+
+<form method="post" class="card card-body mb-4">
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">Barang</label>
+            <select name="id_barang" id="id_barang" class="form-select" required>
+                <option value="" disabled selected>-- pilih barang --</option>
+                {% for b in barang_list %}
+                <option value="{{ b.id_barang }}" data-harga="{{ b.harga_beli|int }}">
+                    {{ b.kode_barang }} - {{ b.nama_barang }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Supplier</label>
+            <select name="id_supplier" class="form-select" required>
+                <option value="" disabled selected>-- pilih supplier --</option>
+                {% for s in supplier_list %}
+                <option value="{{ s.id_supplier }}">{{ s.nama_supplier }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Tanggal Masuk</label>
+            <input type="date" name="tanggal_masuk" class="form-control" required value="{{ hari_ini }}">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Jumlah</label>
+            <input type="number" name="jumlah" min="1" class="form-control" required>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Harga Beli Satuan (Rp)</label>
+            <input type="number" name="harga_beli" id="harga_beli" min="0" class="form-control" required>
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <button class="btn btn-success">Simpan Barang Masuk</button>
+        </div>
+    </div>
+</form>
+
+<div class="table-responsive">
+<table class="table table-striped table-bordered bg-white align-middle">
+    <thead class="table-dark">
+        <tr><th>Tanggal</th><th>Barang</th><th>Supplier</th><th>Jumlah</th><th>Harga Satuan</th><th>Total</th></tr>
+    </thead>
+    <tbody>
+        {% for m in data %}
+        <tr>
+            <td>{{ m.tanggal_masuk }}</td>
+            <td>{{ m.nama_barang }}</td>
+            <td>{{ m.nama_supplier }}</td>
+            <td>{{ m.jumlah }} {{ m.satuan }}</td>
+            <td>{{ m.harga_beli|rupiah }}</td>
+            <td>{{ (m.jumlah * m.harga_beli)|rupiah }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+
+<script>
+    const pilih = document.getElementById("id_barang");
+    const harga = document.getElementById("harga_beli");
+    pilih.addEventListener("change", () => {
+        harga.value = pilih.selectedOptions[0].dataset.harga || 0;
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+<h4 class="mb-3">Data Supplier</h4>
+
+<form method="post" action="{{ url_for('supplier_simpan') }}" class="card card-body mb-4">
+    <input type="hidden" name="id_supplier" value="{{ edit.id_supplier if edit else '' }}">
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">Nama Supplier</label>
+            <input type="text" name="nama_supplier" class="form-control" required
+                   value="{{ edit.nama_supplier if edit else '' }}">
+        </div>
+        <div class="col-md-8">
+            <label class="form-label">Alamat</label>
+            <input type="text" name="alamat" class="form-control"
+                   value="{{ (edit.alamat or '') if edit else '' }}">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Telepon</label>
+            <input type="text" name="telepon" class="form-control"
+                   value="{{ (edit.telepon or '') if edit else '' }}">
+        </div>
+        <div class="col-md-5">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control"
+                   value="{{ (edit.email or '') if edit else '' }}">
+        </div>
+        <div class="col-md-3 d-flex align-items-end gap-2">
+            <button class="btn btn-success">{{ 'Update' if edit else 'Tambah' }}</button>
+            {% if edit %}<a href="{{ url_for('supplier') }}" class="btn btn-secondary">Batal</a>{% endif %}
+        </div>
+    </div>
+</form>
+
+<div class="table-responsive">
+<table class="table table-striped table-bordered bg-white align-middle">
+    <thead class="table-dark">
+        <tr><th>ID</th><th>Nama</th><th>Alamat</th><th>Telepon</th><th>Email</th><th style="width:150px">Aksi</th></tr>
+    </thead>
+    <tbody>
+        {% for s in data %}
+        <tr>
+            <td>{{ s.id_supplier }}</td>
+            <td>{{ s.nama_supplier }}</td>
+            <td>{{ s.alamat }}</td>
+            <td>{{ s.telepon }}</td>
+            <td>{{ s.email }}</td>
+            <td>
+                <a href="{{ url_for('supplier_edit', id=s.id_supplier) }}" class="btn btn-sm btn-warning">Edit</a>
+                <form action="{{ url_for('supplier_hapus', id=s.id_supplier) }}" method="post" class="d-inline"
+                      onsubmit="return confirm('Hapus supplier ini?')">
+                    <button class="btn btn-sm btn-danger">Hapus</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    .note {
+        position: relative;
+        height: 100%;
+        min-height: 138px;
+        padding: 1.6rem 1.25rem 1.15rem;
+        color: var(--ink);
+        border-radius: 2px 2px 2px 18px;
+        box-shadow: 0 9px 10px -7px rgba(35, 45, 24, .4);
+    }
+    .note::before {
+        content: "";
+        position: absolute;
+        top: -11px;
+        left: 50%;
+        width: 74px;
+        height: 22px;
+        transform: translateX(-50%) rotate(-3deg);
+        background: rgba(255, 255, 255, .6);
+        border: 1px solid rgba(35, 45, 24, .12);
+    }
+    .note-1 { background: #FFDCDC; transform: rotate(-1.6deg); }
+    .note-2 { background: #D8A2A2; transform: rotate(1.2deg); }
+    .note-3 { background: #8EA66B; transform: rotate(-.8deg); }
+    .note-4 { background: #FFF9D6; border: 1px solid #E3D58A; transform: rotate(1.6deg); }
+
+    .note-value {
+        font-family: var(--font-display);
+        font-weight: 800;
+        font-size: 2.6rem;
+        line-height: 1;
+    }
+    .note-value.money { font-size: 1.55rem; line-height: 1.3; padding-top: .55rem; }
+    .note-label { font-weight: 700; margin-top: .55rem; }
+    .note-hint { font-size: .85rem; opacity: .72; }
+
+    .count-chip {
+        background: var(--rose-light);
+        color: var(--danger-text);
+        border: 1px solid var(--rose);
+        border-radius: 5px;
+        font-weight: 700;
+        font-size: .85rem;
+        padding: .15rem .55rem;
+    }
+
+    .gauge {
+        -webkit-appearance: none;
+        appearance: none;
+        display: block;
+        width: 100%;
+        min-width: 120px;
+        height: 12px;
+        border: 0;
+        border-radius: 6px;
+        overflow: hidden;
+        background: var(--rose-light);
+    }
+    .gauge::-webkit-progress-bar { background: var(--rose-light); border-radius: 6px; }
+    .gauge::-webkit-progress-value { background: var(--danger-bar); border-radius: 6px; }
+    .gauge::-moz-progress-bar { background: var(--danger-bar); border-radius: 6px; }
+</style>
+
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-5">
+    <div>
+        <h4 class="mb-1">Ringkasan persediaan</h4>
+        <div class="text-muted" id="tanggal"></div>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{{ url_for('masuk') }}" class="btn btn-primary">
+            <i class="bi bi-box-arrow-in-down me-1"></i> Catat barang masuk
+        </a>
+        <a href="{{ url_for('keluar') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-box-arrow-up me-1"></i> Catat barang keluar
+        </a>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-6 col-lg-3">
+        <div class="note note-1">
+            <div class="note-value">{{ r.total_barang }}</div>
+            <div class="note-label">Jenis barang</div>
+            <div class="note-hint">tercatat di daftar</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="note note-2">
+            <div class="note-value">{{ r.total_kategori }}</div>
+            <div class="note-label">Kategori</div>
+            <div class="note-hint">kelompok barang</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="note note-3">
+            <div class="note-value">{{ r.total_supplier }}</div>
+            <div class="note-label">Supplier</div>
+            <div class="note-hint">pemasok terdaftar</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="note note-4">
+            <div class="note-value money">{{ r.nilai_persediaan|rupiah }}</div>
+            <div class="note-label">Nilai persediaan</div>
+            <div class="note-hint">dihitung dari harga beli</div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex align-items-center gap-2 mb-1">
+    <h5 class="mb-0">Perlu dibeli lagi</h5>
+    <span class="count-chip">{{ menipis|length }} barang</span>
+</div>
+<p class="text-muted mb-3">Stok barang ini sama dengan atau di bawah batas minimum.</p>
+
+<div class="table-responsive">
+<table class="table align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>Barang</th>
+            <th>Stok</th>
+            <th>Batas minimum</th>
+            <th style="width:230px">Kondisi</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for b in menipis %}
+        {% set persen = (b.stok * 100 / b.stok_minimum)|int if b.stok_minimum > 0 else 0 %}
+        <tr>
+            <td>
+                <div class="fw-bold">{{ b.nama_barang }}</div>
+                <div class="small text-muted">{{ b.kode_barang }}</div>
+            </td>
+            <td class="fw-bold">{{ b.stok }} {{ b.satuan }}</td>
+            <td>{{ b.stok_minimum }} {{ b.satuan }}</td>
+            <td>
+                <progress class="gauge" max="100" value="{{ [persen, 100]|min }}"></progress>
+                <div class="small fw-bold mt-1" style="color: var(--danger-text)">
+                    {{ 'Habis' if b.stok == 0 else 'Menipis' }}
+                </div>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="4" class="text-center py-4">
+                <i class="bi bi-check-circle-fill me-1" style="color: var(--sage-dark)"></i>
+                Semua stok di atas batas minimum. Belum ada yang perlu dibeli.
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+
+<script>
+    document.getElementById("tanggal").textContent = new Date().toLocaleDateString("id-ID", {
+        weekday: "long", day: "numeric", month: "long", year: "numeric"
+    });
+</script>
+{% endblock %}
